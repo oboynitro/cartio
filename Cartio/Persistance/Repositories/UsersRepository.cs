@@ -26,12 +26,12 @@ namespace Cartio.Persistance.Repositories
             return await _context.Users.ToListAsync();
         }
 
-        public async Task<User> GetByIdAsync(Guid id)
+        public async Task<User?> GetByIdAsync(Guid id)
         {
             return await _context.Users.FindAsync(id);
         }
 
-        public async Task<User> GetUserByPhoneNumberAsync(string phoneNumber)
+        public async Task<User?> GetUserByPhoneNumberAsync(string phoneNumber)
         {
             return await _context.Users
                 .Where(u => u.PhoneNumber == phoneNumber)

@@ -38,7 +38,7 @@ namespace Cartio.Api
             this IServiceCollection services)
         {
             services.AddScoped<ICartService, CartService>();
-            services.AddScoped<IUsersService, UsersService>();
+            services.AddScoped<IUserService, UserService>();
             services.AddScoped<IJwtTokenService, JwtTokenService>();
             services.AddScoped<IPasswordService, PasswordService>();
             services.AddScoped<IAuthenticationService, AuthenticationService>();

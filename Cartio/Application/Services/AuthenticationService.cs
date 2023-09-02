@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Cartio.Application.Services
 {
-    internal class AuthenticationService : IAuthenticationService
+    public class AuthenticationService : IAuthenticationService
     {
         private readonly IUsersRepository _usersRepository;
         private readonly IJwtTokenService _jwtTokenService;

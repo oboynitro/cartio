@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Cartio.Application.Abstractions.Services
 {
-    public interface IUsersService
+    public interface IUserService
     {
         Task<AuthenticationResult> CreateNewUser(RegisterUserRequest request);
     }

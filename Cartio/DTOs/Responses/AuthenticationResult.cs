@@ -2,7 +2,7 @@
 {
     public class AuthenticationResult
     {
-        public string FullName { get; set; }
-        public string AccessToken { get; set; }
+        public string FullName { get; set; } = null!;
+        public string AccessToken { get; set; } = null!;
     }
 }

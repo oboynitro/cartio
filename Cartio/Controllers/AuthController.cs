@@ -1,6 +1,7 @@
 ﻿using Cartio.Application.Abstractions.Services;
 using Cartio.DTOs.Requests;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 
@@ -11,11 +12,11 @@ namespace Cartio.Controllers
     [Route("auth")]
     public class AuthController : Controller
     {
-        private readonly IUsersService _usersService;
+        private readonly IUserService _usersService;
         private readonly IAuthenticationService _authenticationService;
 
         public AuthController(
-            IUsersService usersService, 
+            IUserService usersService, 
             IAuthenticationService authenticationService)
         {
             _usersService = usersService;
@@ -33,7 +34,7 @@ namespace Cartio.Controllers
         /// /// <remarks>
         /// Sample request:
         ///
-        ///     POST /Todo
+        ///     POST /auth/register
         ///     {
         ///        "phoneNumber": "0000000000",
         ///        "fullName": "CartioUser",
@@ -43,14 +44,37 @@ namespace Cartio.Controllers
         ///
         /// </remarks>
         [HttpPost("register")]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Register(RegisterUserRequest request)
         {
             var authResult = await _usersService.CreateNewUser(request);
 
-            return Ok(authResult);
+            return CreatedAtAction("Register", authResult);
         }
 
+
+        /// <summary>
+        /// Authenticats user and responses with a jwt token
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns>
+        /// Fullname: Full registered name of user
+        /// Token: JWT access token to use
+        /// </returns>
+        /// /// <remarks>
+        /// Sample request:
+        ///
+        ///     POST /auth/login
+        ///     {
+        ///        "phoneNumber": "0000000000",
+        ///        "password": "password",
+        ///     }
+        ///
+        /// </remarks>
         [HttpPost("login")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Login(LoginRequest request)
         {
             var authResult = await _authenticationService.Authenticate(

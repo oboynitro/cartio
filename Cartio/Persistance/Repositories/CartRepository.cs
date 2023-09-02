@@ -27,14 +27,14 @@ namespace Cartio.Api.Persistance.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task<Cart> GetByIdAsync(Guid id)
+        public async Task<Cart?> GetByIdAsync(Guid id)
         {
             return await _context.Carts
                 .Include(c => c.User)
                 .FirstOrDefaultAsync(c => c.Id == id);
         }
 
-        public async Task<Cart> GetByUserAndItemIdAsync(User user, Guid id)
+        public async Task<Cart?> GetByUserAndItemIdAsync(User user, Guid id)
         {
             return await _context.Carts
                 .Where(c => c.User == user && c.ItemId == id)
@@ -42,7 +42,7 @@ namespace Cartio.Api.Persistance.Repositories
                 .FirstOrDefaultAsync();
         }
 
-        public IQueryable<Cart> GetAllByUserAsync(User user)
+        public IQueryable<Cart?> GetAllByUserAsync(User user)
         {
             return _context.Carts
                 .Where(c => c.User == user)
@@ -56,7 +56,7 @@ namespace Cartio.Api.Persistance.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public IQueryable<Cart> GetAll()
+        public IQueryable<Cart?> GetAll()
         {
             return _context.Carts
                 .Include(c => c.User)

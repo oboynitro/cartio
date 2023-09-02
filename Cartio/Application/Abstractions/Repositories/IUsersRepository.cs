@@ -10,9 +10,10 @@ namespace Cartio.Application.Abstractions.Repositories
     {
         Task<IEnumerable<User>> GetAllAsync();
 
-        Task<User> GetByIdAsync(Guid id);
+        Task<User?> GetByIdAsync(Guid id);
 
         Task AddAsync(User entity);
-        Task<User> GetUserByPhoneNumberAsync(string phoneNumber);
+
+        Task<User?> GetUserByPhoneNumberAsync(string phoneNumber);
     }
 }

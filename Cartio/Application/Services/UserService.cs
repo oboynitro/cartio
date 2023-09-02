@@ -8,13 +8,13 @@ using System.Threading.Tasks;
 
 namespace Cartio.Application.Services
 {
-    internal class UsersService : IUsersService
+    public class UserService : IUserService
     {
         private readonly IUsersRepository _usersRepository;
         private readonly IPasswordService _passwordService;
         private readonly IJwtTokenService _jwtTokenGenerator;
 
-        public UsersService(
+        public UserService(
             IUsersRepository usersRepository,
             IPasswordService passwordService,
             IJwtTokenService jwtTokenGenerator)
