@@ -26,6 +26,102 @@ namespace Cartio.Tests.Systems.Services
         }
 
         [Fact]
+        public async Task CreateNewUser_ShouldThrowException_WhenUserPhoneNumberIsNotNumeric()
+        {
+            // Arrange
+            var phoneNumber = "somethingbad";
+
+            // Act
+            var response = _userService.CreateNewUser(
+                new RegisterUserRequest
+                {
+                    FullName = It.IsAny<string>(),
+                    PhoneNumber = phoneNumber,
+                    Password = It.IsAny<string>(),
+                    ConfirmPassword = It.IsAny<string>()
+                });
+
+            // Assert
+            await Assert.ThrowsAsync<InvalidPhoneNumberException>(() => response);
+        }
+
+        [Fact]
+        public async Task CreateNewUser_ShouldThrowException_WhenUserPhoneNumberIsNumericButLessThan10()
+        {
+            // Arrange
+            var phoneNumber = "00000000";
+
+            // Act
+            var response = _userService.CreateNewUser(
+                new RegisterUserRequest
+                {
+                    FullName = It.IsAny<string>(),
+                    PhoneNumber = phoneNumber,
+                    Password = It.IsAny<string>(),
+                    ConfirmPassword = It.IsAny<string>()
+                });
+
+            // Assert
+            await Assert.ThrowsAsync<InvalidPhoneNumberException>(() => response);
+        }
+
+        [Fact]
+        public async Task CreateNewUser_ShouldThrowException_WhenUserPhoneNumberIsNumericButGreaterThan10()
+        {
+            // Arrange
+            var phoneNumber = "000000000000";
+
+            // Act
+            var response = _userService.CreateNewUser(
+                new RegisterUserRequest
+                {
+                    FullName = It.IsAny<string>(),
+                    PhoneNumber = phoneNumber,
+                    Password = It.IsAny<string>(),
+                    ConfirmPassword = It.IsAny<string>()
+                });
+
+            // Assert
+            await Assert.ThrowsAsync<InvalidPhoneNumberException>(() => response);
+        }
+
+        [Fact]
+        public async Task CreateNewUser_ShouldReturnCreatedUser_WhenUserPhoneNumberIsNumericAndEqualTo10()
+        {
+            // Arrange
+            var phoneNumber = "0000000000";
+
+            _userRepoMoq.Setup(x => x.GetUserByPhoneNumberAsync(phoneNumber))
+                .ReturnsAsync(() => null);
+
+            _passwordServiceMoq.Setup(x => x.HashPassword(It.IsAny<string>()))
+                .Returns((It.IsAny<string>(), It.IsAny<string>()));
+
+            _jwtTokenServiceMoq.Setup(x => x.GenerateToken(It.IsAny<User>()))
+                .Returns("access-token");
+
+            // Act
+            var response = await _userService.CreateNewUser(
+                new RegisterUserRequest
+                {
+                    PhoneNumber = phoneNumber,
+                    FullName = "Frank",
+                    Password = "password",
+                    ConfirmPassword = "password"
+                });
+
+            // Assert
+            _userRepoMoq.Verify(x => x.GetUserByPhoneNumberAsync(phoneNumber));
+            _userRepoMoq.Verify(x => x.AddAsync(It.IsAny<User>()));
+            _passwordServiceMoq.Verify(x => x.HashPassword(It.IsAny<string>()));
+            _jwtTokenServiceMoq.Verify(x => x.GenerateToken(It.IsAny<User>()));
+            Assert.NotNull(response);
+            Assert.Equal("Frank", response.FullName);
+            Assert.Equal("access-token", response.AccessToken);
+        }
+
+
+        [Fact]
         public async Task CreateNewUser_ShouldThrowException_WhenUserPhoneNumberAlreadyExists()
         {
             // Arrange
@@ -44,6 +140,7 @@ namespace Cartio.Tests.Systems.Services
             _userRepoMoq.Verify(x => x.GetUserByPhoneNumberAsync("0000000000"));
             await Assert.ThrowsAsync<DuplicatePhoneNumberException>(() => response);
         }
+
 
         [Fact]
         public async Task CreateNewUser_ShouldReturnCreatedUser_WhenUserPhoneNumberDoesNotExist()

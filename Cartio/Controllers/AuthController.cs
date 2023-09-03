@@ -31,7 +31,7 @@ namespace Cartio.Controllers
         /// Fullname: Full registered name of user
         /// Token: JWT access token to use
         /// </returns>
-        /// /// <remarks>
+        /// <remarks>
         /// Sample request:
         ///
         ///     POST /auth/register
@@ -39,7 +39,7 @@ namespace Cartio.Controllers
         ///        "phoneNumber": "0000000000",
         ///        "fullName": "CartioUser",
         ///        "password": "password",
-        ///        "confirmPassword": "password",
+        ///        "confirmPassword": "password"
         ///     }
         ///
         /// </remarks>
@@ -62,13 +62,13 @@ namespace Cartio.Controllers
         /// Fullname: Full registered name of user
         /// Token: JWT access token to use
         /// </returns>
-        /// /// <remarks>
+        /// <remarks>
         /// Sample request:
         ///
         ///     POST /auth/login
         ///     {
         ///        "phoneNumber": "0000000000",
-        ///        "password": "password",
+        ///        "password": "password"
         ///     }
         ///
         /// </remarks>

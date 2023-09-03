@@ -5,6 +5,8 @@ using Cartio.DTOs.Requests;
 using Cartio.Entities;
 using Moq;
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -240,6 +242,95 @@ namespace Cartio.Tests.Systems.Services
             // Assert
             _cartRepository.Verify(x => x.DeleteAsync(It.IsAny<Cart>()));
             Assert.Null(cartResponse);
+        }
+
+        [Fact]
+        public async Task AllCartItems_ShouldReturnAllItems_WhenNoFilterIsApplied()
+        {
+            // Arrange
+            var cartItems = new List<Cart>
+            {
+                new Cart
+                {
+                    Id = Guid.NewGuid(),
+                    ItemId = Guid.NewGuid(),
+                    ItemName = "Item 1",
+                    Quantity = 3,
+                    UnitPrice = 250,
+                    PhoneNumber = "0000000000"
+                },
+                new Cart
+                {
+                    Id = Guid.NewGuid(),
+                    ItemId = Guid.NewGuid(),
+                    ItemName = "Item 2",
+                    Quantity = 5,
+                    UnitPrice = 250,
+                    PhoneNumber = "0000000001"
+                },
+                new Cart
+                {
+                    Id = Guid.NewGuid(),
+                    ItemId = Guid.NewGuid(),
+                    ItemName = "Item 3",
+                    Quantity = 1,
+                    UnitPrice = 250,
+                    PhoneNumber = "0000000000"
+                }
+            };
+
+            _cartRepository.Setup(x => x.GetAll())
+                .ReturnsAsync(cartItems);
+
+            // Act
+            var cartResponse = await _cartService.AllCartItems(new CartsFilterQueryRequest());
+
+            // Assert
+            Assert.Equal(3, cartResponse.Items.Count);
+            Assert.Equal("Item 3", cartResponse.Items[2].ItemName);
+        }
+
+        [Fact]
+        public async Task AllUserCartItems_ShouldReturnAllItems_WhenUserPhoneNumberIsPassed()
+        {
+            // Arrange
+            var phoneNumber = "0000000000";
+            var page = 1;
+            var itemsPerPage = 10;
+            
+            var cartItems = new List<Cart>
+            {
+                new Cart
+                {
+                    Id = Guid.NewGuid(),
+                    ItemId = Guid.NewGuid(),
+                    ItemName = "Item 1",
+                    Quantity = 3,
+                    UnitPrice = 250,
+                    PhoneNumber = "0000000000"
+                },
+                new Cart
+                {
+                    Id = Guid.NewGuid(),
+                    ItemId = Guid.NewGuid(),
+                    ItemName = "Item 3",
+                    Quantity = 1,
+                    UnitPrice = 250,
+                    PhoneNumber = "0000000000"
+                }
+            };
+
+            _cartRepository.Setup(x => x.GetAllByPhoneNumberAsync(phoneNumber))
+                .ReturnsAsync(cartItems);
+
+            // Act
+            var cartResponse = await _cartService.AllUserCartItems(
+                page, itemsPerPage, phoneNumber);
+
+            // Assert
+            Assert.Equal(2, cartResponse.Items.Count);
+            Assert.Equal(phoneNumber, cartResponse.Items[0].PhoneNumber);
+            Assert.Equal(phoneNumber, cartResponse.Items[1].PhoneNumber);
         }
     }
 }

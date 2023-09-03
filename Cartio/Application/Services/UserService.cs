@@ -4,6 +4,8 @@ using Cartio.Application.Errors;
 using Cartio.DTOs.Requests;
 using Cartio.DTOs.Responses;
 using Cartio.Entities;
+using System;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Cartio.Application.Services
@@ -26,6 +28,9 @@ namespace Cartio.Application.Services
 
         public async Task<AuthenticationResult> CreateNewUser(RegisterUserRequest request)
         {
+            if (!Regex.IsMatch(request.PhoneNumber, @"^\d{10}$"))
+                throw new InvalidPhoneNumberException();
+
             if (await _usersRepository.GetUserByPhoneNumberAsync(request.PhoneNumber) != null)
                 throw new DuplicatePhoneNumberException();
 
@@ -35,8 +40,7 @@ namespace Cartio.Application.Services
                 fullName: request.FullName,
                 phoneNumber: request.PhoneNumber,
                 password: passwordHash,
-                salt: salt
-                );
+                salt: salt);
 
             await _usersRepository.AddAsync(newUser);
             string token = _jwtTokenGenerator.GenerateToken(newUser);

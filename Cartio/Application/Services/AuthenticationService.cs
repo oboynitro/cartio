@@ -2,6 +2,8 @@
 using Cartio.Application.Abstractions.Services;
 using Cartio.Application.Errors;
 using Cartio.DTOs.Responses;
+using System;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Cartio.Application.Services
@@ -24,6 +26,9 @@ namespace Cartio.Application.Services
 
         public async Task<AuthenticationResult> Authenticate(string phoneNumber, string password)
         {
+            if (!Regex.IsMatch(phoneNumber, @"^\d{10}$"))
+                throw new InvalidPhoneNumberException();
+
             var user = await _usersRepository.GetUserByPhoneNumberAsync(phoneNumber)
                 ?? throw new AuthenticationException();
 
@@ -37,7 +42,6 @@ namespace Cartio.Application.Services
                 FullName = user.FullName,
                 AccessToken = token
             };
-
         }
     }
 }
