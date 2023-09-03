@@ -8,10 +8,10 @@ namespace Cartio.Application.Abstractions.Repositories
 {
     public interface ICartRepository
     {
-        Task<Cart?> GetByUserAndItemIdAsync(User user, Guid itemId);
-        Task<Cart?> GetByIdAsync(Guid id);
-        IQueryable<Cart?> GetAllByUserAsync(User user);
-        IQueryable<Cart?> GetAll();
+        Task<Cart> GetByPhoneNumberAndItemIdAsync(string phoneNumber, Guid itemId);
+        Task<Cart> GetByIdAsync(Guid id);
+        Task<IEnumerable<Cart>> GetAllByPhoneNumberAsync(string phoneNumber);
+        Task<IEnumerable<Cart>> GetAll();
         Task UpdateAsync(Cart entity, int quantity);
         Task DeleteAsync(Cart entity);
         Task AddAsync(Cart entity);

@@ -13,19 +13,19 @@ namespace Cartio.Entities
             string itemName,
             int quantity,
             double unitPrice,
-            User user)
+            string phoneNumber)
         {
             ItemId = itemId;
             ItemName = itemName;
             Quantity = quantity;
             UnitPrice = unitPrice;
-            User = user;
+            PhoneNumber = phoneNumber;
         }
 
         public Guid ItemId { get; set; }
-        public string ItemName { get; set; }
+        public string ItemName { get; set; } = null!;
         public int Quantity { get; set; }
         public double UnitPrice { get; set; }
-        public User User { get; set; }
+        public string PhoneNumber { get; set; } = null!;
     }
 }

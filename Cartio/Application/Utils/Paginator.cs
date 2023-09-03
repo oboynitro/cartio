@@ -26,13 +26,13 @@ namespace Cartio.Application.Utils
         public bool HasNextPage => Page * ItemsPerPage < TotalCount;
         public bool HasPreviousPage => ItemsPerPage > 1;
 
-        public static async Task<Paginator<T>> CreateAsync(
-            IQueryable<T> query,
+        public static Paginator<T> CreateAsync(
+            IEnumerable<T> query,
             int page,
             int itemsPerPage)
         {
-            var totalCount = await query.CountAsync();
-            var items = await query.Skip((page - 1) * itemsPerPage).Take(itemsPerPage).ToListAsync();
+            var totalCount = query.Count();
+            var items = query.Skip((page - 1) * itemsPerPage).Take(itemsPerPage).ToList();
 
             return new Paginator<T>(items, page, itemsPerPage, totalCount);
         }

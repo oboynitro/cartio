@@ -27,27 +27,24 @@ namespace Cartio.Api.Persistance.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task<Cart?> GetByIdAsync(Guid id)
+        public async Task<Cart> GetByIdAsync(Guid id)
         {
             return await _context.Carts
-                .Include(c => c.User)
                 .FirstOrDefaultAsync(c => c.Id == id);
         }
 
-        public async Task<Cart?> GetByUserAndItemIdAsync(User user, Guid id)
+        public async Task<Cart> GetByPhoneNumberAndItemIdAsync(string phoneNumber, Guid id)
         {
             return await _context.Carts
-                .Where(c => c.User == user && c.ItemId == id)
-                .Include(c => c.User)
+                .Where(c => c.PhoneNumber == phoneNumber && c.ItemId == id)
                 .FirstOrDefaultAsync();
         }
 
-        public IQueryable<Cart?> GetAllByUserAsync(User user)
+        public async Task<IEnumerable<Cart>> GetAllByPhoneNumberAsync(string phoneNumber)
         {
-            return _context.Carts
-                .Where(c => c.User == user)
-                .Include(c => c.User)
-                .AsQueryable();
+            return await _context.Carts
+                .Where(c => c.PhoneNumber == phoneNumber)
+                .ToListAsync();
         }
 
         public async Task UpdateAsync(Cart entity, int quantity)
@@ -56,11 +53,9 @@ namespace Cartio.Api.Persistance.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public IQueryable<Cart?> GetAll()
+        public async Task<IEnumerable<Cart>> GetAll()
         {
-            return _context.Carts
-                .Include(c => c.User)
-                .AsQueryable();
+            return await _context.Carts.ToListAsync();
         }
     }
 }

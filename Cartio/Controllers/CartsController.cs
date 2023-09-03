@@ -62,9 +62,11 @@ namespace Cartio.Controllers
         [HttpDelete]
         public async Task<IActionResult> RemoveItemFromCart(RemoveCartItemRequest request)
         {
-            await _cartService.RemoveItemFromCart(request, GetAuthUserPhoneNumber());
+            var cartResponse = await _cartService.RemoveItemFromCart(request, GetAuthUserPhoneNumber());
 
-            return NoContent();
+            if (cartResponse == null) return NoContent();
+
+            return Ok(cartResponse);
         }
 
 

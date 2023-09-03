@@ -1,5 +1,4 @@
-﻿using Cartio.Api.Application.Errors;
-using Cartio.Application.Abstractions.Repositories;
+﻿using Cartio.Application.Abstractions.Repositories;
 using Cartio.Application.Abstractions.Services;
 using Cartio.Application.Errors;
 using Cartio.Application.Utils;
@@ -12,24 +11,20 @@ using System.Threading.Tasks;
 
 namespace Cartio.Application.Services
 {
-    internal class CartService : ICartService
+    public class CartService : ICartService
     {
-        private readonly ICartRepository _cartRepository;
-        private readonly IUsersRepository _usersRepository;
+        private readonly ICartRepository _cartRepository ;
 
-        public CartService(
-            IUsersRepository usersRepository,
-            ICartRepository cartRepository)
+        public CartService(ICartRepository cartRepository)
         {
-            _usersRepository = usersRepository;
             _cartRepository = cartRepository;
         }
 
-        public async Task<CartItemResponse> AddItemToCart(AddCartItemRequest request, string phoneNumber)
+        public async Task<CartItemResponse> AddItemToCart(
+            AddCartItemRequest request, string phoneNumber)
         {
-            var user = await GetRequestUser(phoneNumber) ?? throw new UserNotFoundException();
-
-            var cartItem = await GetUserCartItem(user, request.ItemId);
+            var cartItem = await _cartRepository.GetByPhoneNumberAndItemIdAsync(
+                phoneNumber, request.ItemId);
 
             if (cartItem == null)
             {
@@ -38,8 +33,10 @@ namespace Cartio.Application.Services
                     itemName: request.ItemName,
                     quantity: request.Quantity > 0 ? request.Quantity : 1,
                     unitPrice: request.UnitPrice,
-                    user: user);
+                    phoneNumber: phoneNumber);
+
                 await _cartRepository.AddAsync(newCartItem);
+
                 return new CartItemResponse 
                 { 
                     Id = newCartItem.Id,
@@ -47,10 +44,12 @@ namespace Cartio.Application.Services
                     ItemName = newCartItem.ItemName,
                     Quantity = newCartItem.Quantity,
                     UnitPrice = newCartItem.UnitPrice,
-                    PhoneNumber = newCartItem.User.PhoneNumber
+                    PhoneNumber = newCartItem.PhoneNumber
                 };
             }
+
             await _cartRepository.UpdateAsync(cartItem, cartItem.Quantity + 1);
+
             return new CartItemResponse
             {
                 Id = cartItem.Id,
@@ -58,22 +57,22 @@ namespace Cartio.Application.Services
                 ItemName = cartItem.ItemName,
                 Quantity = cartItem.Quantity,
                 UnitPrice = cartItem.UnitPrice,
-                PhoneNumber = cartItem.User.PhoneNumber
+                PhoneNumber = cartItem.PhoneNumber
             };
         }
 
         public async Task<Paginator<CartItemResponse>> AllCartItems(CartsFilterQueryRequest query)
         {
-            var cartsItemsQuery = _cartRepository.GetAll();
+            var cartsItemsQuery = await _cartRepository.GetAll();
 
             if(!string.IsNullOrWhiteSpace(query.PhoneNumber))
-                cartsItemsQuery = cartsItemsQuery.Where(c =>c.User.PhoneNumber.Contains(query.PhoneNumber));
+                cartsItemsQuery = cartsItemsQuery.Where(c => c.PhoneNumber.Contains(query.PhoneNumber));
 
             if (!string.IsNullOrWhiteSpace(query.ItemName))
-                cartsItemsQuery = cartsItemsQuery.Where(c =>c.ItemName.Contains(query.ItemName));
+                cartsItemsQuery = cartsItemsQuery.Where(c => c.ItemName.Contains(query.ItemName));
 
             if (query.Quantity > 0)
-                cartsItemsQuery = cartsItemsQuery.Where(c =>c.Quantity == query.Quantity);
+                cartsItemsQuery = cartsItemsQuery.Where(c => c.Quantity == query.Quantity);
 
             if (!string.IsNullOrWhiteSpace(query.Time))
             {
@@ -91,10 +90,10 @@ namespace Cartio.Application.Services
                     ItemName = c.ItemName,
                     UnitPrice = c.UnitPrice,
                     Quantity = c.Quantity,
-                    PhoneNumber = c.User.PhoneNumber
+                    PhoneNumber = c.PhoneNumber
                 });
 
-            var cartItems = await Paginator<CartItemResponse>.CreateAsync(
+            var cartItems = Paginator<CartItemResponse>.CreateAsync(
                 itemResponsesQuery, query.Page, query.ItemsPerPage);
 
             return cartItems;
@@ -105,9 +104,7 @@ namespace Cartio.Application.Services
             int itemsPerPage,
             string phoneNumber)
         {
-            var user = await GetRequestUser(phoneNumber) ?? throw new UserNotFoundException();
-
-            var cartItemsQuery = _cartRepository.GetAllByUserAsync(user);
+            var cartItemsQuery = await _cartRepository.GetAllByPhoneNumberAsync(phoneNumber);
 
             var cartItemsResponses = cartItemsQuery
                 .Select(c => new CartItemResponse
@@ -117,10 +114,10 @@ namespace Cartio.Application.Services
                     ItemName = c.ItemName,
                     UnitPrice = c.UnitPrice,
                     Quantity = c.Quantity,
-                    PhoneNumber = c.User.PhoneNumber
+                    PhoneNumber = c.PhoneNumber
                 });
 
-            var cartItems = await Paginator<CartItemResponse>
+            var cartItems = Paginator<CartItemResponse>
                 .CreateAsync(cartItemsResponses, page, itemsPerPage);
 
             return cartItems;
@@ -142,34 +139,34 @@ namespace Cartio.Application.Services
             };
         }
 
-        public async Task RemoveItemFromCart(RemoveCartItemRequest request, string phoneNumber)
+        public async Task<CartItemResponse?> RemoveItemFromCart(RemoveCartItemRequest request, string phoneNumber)
         {
-            var user = await GetRequestUser(phoneNumber) ?? throw new UserNotFoundException();
-
-            var cartItem = await GetUserCartItem(user, request.ItemId)
+            var cartItem = await _cartRepository.GetByPhoneNumberAndItemIdAsync(
+                phoneNumber, request.ItemId)
                 ?? throw new CartNotFoundException();
 
             if(request.ClearItem)
             {
                 await _cartRepository.DeleteAsync(cartItem);
-                return;
+                return null;
             }
 
             await _cartRepository.UpdateAsync(cartItem, cartItem.Quantity - 1);
 
-            if (cartItem.Quantity <= 0)
+            if (cartItem.Quantity < 1)
+            {
                 await _cartRepository.DeleteAsync(cartItem);
+                return null;
+            }
 
-        }
-
-        private async Task<User> GetRequestUser(string phoneNumber)
-        {
-            return await _usersRepository.GetUserByPhoneNumberAsync(phoneNumber);
-        }
-
-        private async Task<Cart> GetUserCartItem(User user, Guid itemId)
-        {
-            return await _cartRepository.GetByUserAndItemIdAsync(user, itemId);
+            return new CartItemResponse
+            {
+                Id = cartItem.Id,
+                ItemId = cartItem.ItemId,
+                ItemName = cartItem.ItemName,
+                Quantity = cartItem.Quantity,
+                UnitPrice = cartItem.UnitPrice,
+            };
         }
     }
 }

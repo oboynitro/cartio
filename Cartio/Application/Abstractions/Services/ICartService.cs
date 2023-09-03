@@ -16,7 +16,7 @@ namespace Cartio.Application.Abstractions.Services
             int itemsPerPage, 
             string phoneNumber);
         public Task<Paginator<CartItemResponse>> AllCartItems(CartsFilterQueryRequest query);
-        public Task RemoveItemFromCart(RemoveCartItemRequest request, string phoneNumber);
+        public Task<CartItemResponse?> RemoveItemFromCart(RemoveCartItemRequest request, string phoneNumber);
         public Task<CartItemResponse> GetCartItemById(Guid id);
     }
 }

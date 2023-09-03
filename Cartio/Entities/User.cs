@@ -19,9 +19,9 @@ namespace Cartio.Entities
             Salt = salt;
         }
 
-        public string FullName { get; set; }
-        public string PhoneNumber { get; set; }
-        public string Password { get; set; }
-        public string Salt { get; set; }
+        public string FullName { get; set; } = null!;
+        public string PhoneNumber { get; set; } = null!;
+        public string Password { get; set; } = null!;
+        public string Salt { get; set; } = null!;
     }
 }
